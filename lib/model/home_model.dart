@@ -52,17 +52,17 @@ class Swipers {
 class BottomIconsModel {
   int statusCode;
   String message;
-  List<Icons> icons;
+  List<IconList> iconList;
 
-  BottomIconsModel({this.statusCode, this.message, this.icons});
+  BottomIconsModel({this.statusCode, this.message, this.iconList});
 
   BottomIconsModel.fromJson(Map<String, dynamic> json) {
     statusCode = json['status_code'];
     message = json['message'];
-    if (json['icons'] != null) {
-      icons = new List<Icons>();
-      json['icons'].forEach((v) {
-        icons.add(new Icons.fromJson(v));
+    if (json['icon_list'] != null) {
+      iconList = new List<IconList>();
+      json['icon_list'].forEach((v) {
+        iconList.add(new IconList.fromJson(v));
       });
     }
   }
@@ -71,21 +71,21 @@ class BottomIconsModel {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['status_code'] = this.statusCode;
     data['message'] = this.message;
-    if (this.icons != null) {
-      data['icons'] = this.icons.map((v) => v.toJson()).toList();
+    if (this.iconList != null) {
+      data['icon_list'] = this.iconList.map((v) => v.toJson()).toList();
     }
     return data;
   }
 }
 
-class Icons {
+class IconList {
   int id;
   String icon;
   int sort;
 
-  Icons({this.id, this.icon, this.sort});
+  IconList({this.id, this.icon, this.sort});
 
-  Icons.fromJson(Map<String, dynamic> json) {
+  IconList.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     icon = json['icon'];
     sort = json['sort'];

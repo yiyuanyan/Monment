@@ -1,4 +1,4 @@
-const serviceURL = "http://192.168.0.80:85/aip";
+const serviceURL = "http://192.168.0.80:85/api";
 const fileURL = "http://192.168.0.80:85";
 const servicePATH = {
   "getBottomBarIcons": serviceURL + "/getBottomBarIcons",  //获取bottomBarIcons

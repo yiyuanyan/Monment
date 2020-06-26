@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:monment/pages/release/release_page.dart';
+import 'package:monment/config/service_url.dart';
+import 'package:monment/provide/index_provide.dart';
+import 'package:provide/provide.dart';
 import 'home/home_page.dart';
+import '../model/home_model.dart';
 import 'channel/channel_page.dart';
 import 'dynamic/dynamic_page.dart';
 import 'ucenter/ucenter_page.dart';
@@ -17,16 +20,42 @@ class _IndexPageState extends State<IndexPage> {
     ScreenUtil.init(context, width: 375, height: 812, allowFontScaling: false);
     ScreenUtil.init(context);
     ScreenUtil.init(context, width: 375, height: 812, allowFontScaling: false);
-    return IndexWidgets();
+    return FutureBuilder(
+      future: _getIndexInfo(context),
+      builder: (BuildContext context, snapshot){
+        if(snapshot.data == "OK"){
+          List<IconList> iconList = Provide.value<IndexProvide>(context).iconList;
+          return IndexWidgets(iconList: iconList);
+        }else{
+          return Container(
+            child: Center(
+              child: Text("正在加载中...."),
+            ),
+          );
+        }
+      },
+    );
+  }
+  Future<String> _getIndexInfo(BuildContext context) async{
+    await Provide.value<IndexProvide>(context).getBottomBarIcons();
+    int barIconsStatusCode = Provide.value<IndexProvide>(context).barIconsStatusCode;
+    if(barIconsStatusCode == 200){
+      return "OK";
+    }else{
+      return "false";
+    }
   }
 }
 
 class IndexWidgets extends StatefulWidget {
+  final List<IconList> iconList;
+  const IndexWidgets({Key key, @required this.iconList,}) : super(key: key);
   @override
   _IndexWidgetsState createState() => _IndexWidgetsState();
 }
 
 class _IndexWidgetsState extends State<IndexWidgets> {
+
   final List<Widget> tabBodies = [
     HomePage(),
     ChannelPage(),
@@ -56,11 +85,12 @@ class _IndexWidgetsState extends State<IndexWidgets> {
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
-            _customBottomItem(currentIndex, 0, "assets/images/bottom/u198.png", "首页"),
-            _customBottomItem(currentIndex, 1, "assets/images/bottom/u201.png", "频道"),
+
+            _customBottomItem(currentIndex, 0, fileURL+widget.iconList[0].icon, "首页"),
+            _customBottomItem(currentIndex, 1, fileURL+widget.iconList[1].icon, "频道"),
             _customBottomItem(currentIndex, -1, null, "发现"),
-            _customBottomItem(currentIndex, 2, "assets/images/bottom/u207.png", "动态"),
-            _customBottomItem(currentIndex, 3, "assets/images/bottom/u210.png", "我的"),
+            _customBottomItem(currentIndex, 2, fileURL+widget.iconList[2].icon, "动态"),
+            _customBottomItem(currentIndex, 3, fileURL+widget.iconList[3].icon, "我的"),
           ],
         ),
       ),
@@ -95,7 +125,7 @@ class _IndexWidgetsState extends State<IndexWidgets> {
             child: Column(
               children: <Widget>[
                 ImageIcon(
-                  AssetImage(iconPath),
+                  NetworkImage(iconPath),
                   color: iconColor,
                   size: iconSize,
                 ),
@@ -129,6 +159,10 @@ class _IndexWidgetsState extends State<IndexWidgets> {
     return item;
   }
 }
+
+
+
+
 
 
 
