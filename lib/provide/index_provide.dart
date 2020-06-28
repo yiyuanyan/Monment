@@ -37,5 +37,21 @@ class IndexProvide with ChangeNotifier {
     });
     notifyListeners();
   }
+  ContentListsModel _contentListsModel;
+  int contentListsStatusCode;
+  String contentListsMessage;
+  List<ContentLists> contentLists;
+  getIndexContentLists() async{
+    await request("getIndexContentLists").then((value){
+      _contentListsModel = ContentListsModel.fromJson(value);
+
+      if(_contentListsModel.statusCode == 200){
+        this.contentListsStatusCode = _contentListsModel.statusCode;
+        this.contentListsMessage = _contentListsModel.message;
+        this.contentLists = _contentListsModel.contentLists;
+      }
+    });
+    notifyListeners();
+  }
 
 }

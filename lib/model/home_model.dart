@@ -99,3 +99,69 @@ class IconList {
     return data;
   }
 }
+
+class ContentListsModel {
+  int statusCode;
+  String message;
+  List<ContentLists> contentLists;
+
+  ContentListsModel({this.statusCode, this.message, this.contentLists});
+
+  ContentListsModel.fromJson(Map<String, dynamic> json) {
+    statusCode = json['status_code'];
+    message = json['message'];
+    if (json['content_lists'] != null) {
+      contentLists = new List<ContentLists>();
+      json['content_lists'].forEach((v) {
+        contentLists.add(new ContentLists.fromJson(v));
+      });
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['status_code'] = this.statusCode;
+    data['message'] = this.message;
+    if (this.contentLists != null) {
+      data['content_lists'] = this.contentLists.map((v) => v.toJson()).toList();
+    }
+    return data;
+  }
+}
+
+class ContentLists {
+  int id;
+  String image;
+  String playTime;
+  String portrait;
+  String title;
+  String tag;
+
+  ContentLists(
+      {this.id,
+        this.image,
+        this.playTime,
+        this.portrait,
+        this.title,
+        this.tag});
+
+  ContentLists.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    image = json['image'];
+    playTime = json['play_time'];
+    portrait = json['portrait'];
+    title = json['title'];
+    tag = json['tag'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['image'] = this.image;
+    data['play_time'] = this.playTime;
+    data['portrait'] = this.portrait;
+    data['title'] = this.title;
+    data['tag'] = this.tag;
+    return data;
+  }
+}
