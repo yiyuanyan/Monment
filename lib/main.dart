@@ -5,7 +5,7 @@ import 'package:monment/routers/application.dart';
 import 'package:fluro/fluro.dart';
 import 'package:monment/routers/routes.dart';
 import 'package:provide/provide.dart';
-
+import 'package:flutter/services.dart';
 void main() {
   //路由管理
   final router = Router();
@@ -27,9 +27,11 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  //final SystemUiOverlayStyle _style = SystemUiOverlayStyle(statusBarColor: Colors.transparent);
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    //SystemChrome.setSystemUIOverlayStyle(_style);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       onGenerateRoute: Application.router.generator,
