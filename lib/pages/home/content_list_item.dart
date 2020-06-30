@@ -63,7 +63,7 @@ class ContentListItem extends StatelessWidget {
               ],
             ),
             Container(
-              margin: EdgeInsets.only(top: ScreenUtil().setHeight(10)),
+              margin: EdgeInsets.only(top: ScreenUtil().setHeight(5)),
               height: ScreenUtil().setHeight(47),
               child: Row(
                 children: <Widget>[
@@ -88,7 +88,7 @@ class ContentListItem extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.clip,
                         style: TextStyle(
-                          fontSize: ScreenUtil().setSp(12),
+                          fontSize: ScreenUtil().setSp(10),
                           color: Colors.grey[400],
                         ),
                       ),
