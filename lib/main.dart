@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:monment/pages/index_page.dart';
+import 'package:monment/provide/display_provide.dart';
 import 'package:monment/provide/index_provide.dart';
 import 'package:monment/routers/application.dart';
 import 'package:fluro/fluro.dart';
@@ -17,9 +18,11 @@ void main() {
   var providers = Providers();
 
   var indexProvide = IndexProvide();
+  var displayProvide = DisplayProvide();
 
 
   providers
+  ..provide(Provider<DisplayProvide>.value(displayProvide))
     ..provide(Provider<IndexProvide>.value(indexProvide));
 
   

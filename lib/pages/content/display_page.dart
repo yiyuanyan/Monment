@@ -1,8 +1,12 @@
 //内容显示页面
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:monment/config/service_url.dart';
+import 'package:monment/model/display_model.dart';
+import 'package:monment/provide/display_provide.dart';
 import 'package:monment/routers/application.dart';
 import 'package:flutter/services.dart';
+import 'package:provide/provide.dart';
 class DisplayPage extends StatelessWidget {
   final displayId;
 
@@ -12,53 +16,82 @@ class DisplayPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final SystemUiOverlayStyle _style = SystemUiOverlayStyle(statusBarColor: Colors.transparent);
     SystemChrome.setSystemUIOverlayStyle(_style);
+    VideoInfo videoInfo;
+    List<Relevant> relevant;
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[
-          Stack(
-            children: <Widget>[
-              InkWell(
-                onTap: (){
-                  print("点击了视频");
-                },
-                child: Container(
-                  width: ScreenUtil().setWidth(375),
-                  height: ScreenUtil().setHeight(211),
-                  color: Colors.brown,
-                  child: _displayWidget(),
+      body: FutureBuilder(
+        future: getDisplayContent(context),
+        builder: (BuildContext context, AsyncSnapshot snapshot){
+          if(snapshot.data == "OK"){
+            videoInfo = Provide.value<DisplayProvide>(context).videoInfo;
+            relevant = Provide.value<DisplayProvide>(context).relevant;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                Stack(
+                  children: <Widget>[
+                    InkWell(
+                      onTap: (){
+                        print("点击了ID为"+videoInfo.id.toString()+"视频");
+                      },
+                      child: Container(
+                        width: ScreenUtil().setWidth(375),
+                        height: ScreenUtil().setHeight(211),
+                        color: Colors.brown,
+                        child: _displayWidget(videoInfo),
+                      ),
+                    ),
+                    Positioned(
+                      left: 0,
+                      top: 20,
+                      child: IconButton(
+                        icon: Icon(Icons.arrow_back),
+                        color: Colors.white,
+                        onPressed: (){
+                          Application.router.pop(context);
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              Positioned(
-                left: 0,
-                top: 20,
-                child: IconButton(
-                  icon: Icon(Icons.arrow_back),
-                  color: Colors.white,
-                  onPressed: (){
-                    Application.router.pop(context);
-                  },
+                Expanded(
+                  flex: 2,
+                  child: ListView(
+                    shrinkWrap: true,
+                    //physics: NeverScrollableScrollPhysics(),
+                    children: _contentListView(context, videoInfo),
+                  ),
                 ),
+              ],
+            );
+          }else{
+            return Container(
+              child: Center(
+                child: Text("正在加载中....."),
               ),
-            ],
-          ),
-          Expanded(
-            flex: 2,
-            child: ListView(
-              shrinkWrap: true,
-              //physics: NeverScrollableScrollPhysics(),
-              children: _contentListView(context),
-            ),
-          ),
-        ],
+            );
+          }
+        },
       ),
     );
   }
-  List<Widget> _contentListView(BuildContext context){
+
+  Future<String> getDisplayContent(BuildContext context) async{
+    await Provide.value<DisplayProvide>(context).getDisplayContent();
+    int displayCode = Provide.value<DisplayProvide>(context).stateCode;
+    if(displayCode == 200){
+      return "OK";
+    }else{
+      return "FALSE";
+    }
+  }
+
+
+  List<Widget> _contentListView(BuildContext context, VideoInfo videoInfo){
     List<Widget> items = [];
-    items.add(_recommendedWidget(context));
+    items.add(_recommendedWidget(context, videoInfo));
     items.add(_title());
     items.add(_displayItems(context, 1));
     items.add(_displayItems(context, 1));
@@ -67,13 +100,14 @@ class DisplayPage extends StatelessWidget {
     return items;
   }
   //视频播放
-  Widget _displayWidget(){
+  Widget _displayWidget(VideoInfo videoInfo){
+    print(fileURL + videoInfo.videoPath.toString());
     return Container(
       width: ScreenUtil().setWidth(375),
       height: ScreenUtil().setHeight(211),
-      color: Colors.red,
+      color: Colors.white,
       child: Image(
-        image: AssetImage("assets/images/content/u214.jpg"),
+        image: NetworkImage(fileURL + videoInfo.videoPath.toString()),
         width: ScreenUtil().setWidth(375),
         height: ScreenUtil().setHeight(211),
         fit: BoxFit.cover,
@@ -81,7 +115,7 @@ class DisplayPage extends StatelessWidget {
     );
   }
   //介绍
-  Widget _recommendedWidget(BuildContext context){
+  Widget _recommendedWidget(BuildContext context, VideoInfo videoInfo){
     return Container(
       padding: EdgeInsets.only(left: ScreenUtil().setHeight(15), right: ScreenUtil().setHeight(15), top: ScreenUtil().setHeight(10)),
       width: ScreenUtil().setWidth(375),
@@ -101,7 +135,8 @@ class DisplayPage extends StatelessWidget {
                 },
                 child: ClipOval(
                   child: Image(
-                    image: AssetImage("assets/images/content/u160.png"),
+                    //image: AssetImage("assets/images/content/u160.png"),
+                    image: NetworkImage(fileURL + videoInfo.userImg.toString()),
                     width: ScreenUtil().setWidth(40),
                     height: ScreenUtil().setHeight(40),
                   ),
@@ -115,7 +150,7 @@ class DisplayPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      "Daisy",
+                      videoInfo.userName.toString(),
                       style: TextStyle(
                         fontSize: ScreenUtil().setSp(14),
                         fontWeight: FontWeight.w600,
@@ -123,7 +158,7 @@ class DisplayPage extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      "2017-10-07",
+                      videoInfo.regTime.toString(),
                       style: TextStyle(
                         fontSize: ScreenUtil().setSp(12),
                         color: Colors.grey[600],
@@ -165,14 +200,14 @@ class DisplayPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               Text(
-                "日剧日影混剪：没有你的我",
+                videoInfo.videoName.toString(),
                 style: TextStyle(
                   fontSize: ScreenUtil().setSp(16),
                   color: Colors.grey[600],
                 ),
               ),
               Text(
-                "#混剪  3456次播放",
+                videoInfo.videoTag.toString(),
                 style: TextStyle(
                   fontSize: ScreenUtil().setSp(12),
                   color: Colors.grey[600],
@@ -180,7 +215,7 @@ class DisplayPage extends StatelessWidget {
               ),
               SizedBox(height: ScreenUtil().setHeight(5),),
               Text(
-                "「閃閃發光，炫彩奪目，心跳不已。卻又無可奈何地，非常輕易地動搖了我的世界。」",
+                videoInfo.videoDesc.toString(),
                 overflow: TextOverflow.clip,
                 maxLines: 2,
                 style: TextStyle(
@@ -210,7 +245,7 @@ class DisplayPage extends StatelessWidget {
                           ),
                           Center(
                             child: Text(
-                              "1221",
+                              videoInfo.videoLike.toString(),
                               style: TextStyle(
                                 fontSize: ScreenUtil().setSp(12),
                                 color: Colors.grey[600],
@@ -240,7 +275,7 @@ class DisplayPage extends StatelessWidget {
                         ),
                         Center(
                           child: Text(
-                            "245",
+                            videoInfo.videoShare.toString(),
                             style: TextStyle(
                               fontSize: ScreenUtil().setSp(12),
                               color: Colors.grey[600],
@@ -269,7 +304,7 @@ class DisplayPage extends StatelessWidget {
                         ),
                         Center(
                           child: Text(
-                            "1221",
+                            videoInfo.videoMessage.toString(),
                             style: TextStyle(
                               fontSize: ScreenUtil().setSp(12),
                               color: Colors.grey[600],
