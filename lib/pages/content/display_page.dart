@@ -61,7 +61,7 @@ class DisplayPage extends StatelessWidget {
                   child: ListView(
                     shrinkWrap: true,
                     //physics: NeverScrollableScrollPhysics(),
-                    children: _contentListView(context, videoInfo),
+                    children: _contentListView(context, videoInfo, relevant),
                   ),
                 ),
               ],
@@ -89,14 +89,18 @@ class DisplayPage extends StatelessWidget {
   }
 
 
-  List<Widget> _contentListView(BuildContext context, VideoInfo videoInfo){
+  List<Widget> _contentListView(BuildContext context, VideoInfo videoInfo, List<Relevant> relevant){
     List<Widget> items = [];
     items.add(_recommendedWidget(context, videoInfo));
     items.add(_title());
-    items.add(_displayItems(context, 1));
-    items.add(_displayItems(context, 1));
-    items.add(_displayItems(context, 1));
-    items.add(_displayItems(context, 1));
+//    items.add(_displayItems(context, 1));
+//    items.add(_displayItems(context, 1));
+//    items.add(_displayItems(context, 1));
+//    items.add(_displayItems(context, 1));
+    relevant.asMap().keys.map((index){
+      items.add(_displayItems(context, index, relevant[index]));
+    }).toList();
+    items.add(SizedBox(height: ScreenUtil().setHeight(20),));
     return items;
   }
   //视频播放
@@ -371,7 +375,7 @@ class DisplayPage extends StatelessWidget {
     );
   }
   //items
-  Widget _displayItems(BuildContext context, int index){
+  Widget _displayItems(BuildContext context, int index, Relevant relevant){
     return InkWell(
       highlightColor: Colors.white,
       splashColor: Colors.white,
@@ -379,6 +383,7 @@ class DisplayPage extends StatelessWidget {
       //focusColor: Colors.white,
       onTap: (){
         print("点击了第" +index.toString()+ "item");
+        Application.router.navigateTo(context, "/display?displayId="+relevant.id.toString());
       },
       child: Container(
         padding: EdgeInsets.only(left: ScreenUtil().setHeight(15), right: ScreenUtil().setHeight(15), top: ScreenUtil().setHeight(20)),
@@ -394,7 +399,7 @@ class DisplayPage extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.brown,
                     borderRadius: BorderRadius.all(Radius.circular(5)),
-                    image: DecorationImage(image: AssetImage("assets/images/display/u272.png")),
+                    image: DecorationImage(image: NetworkImage(fileURL + relevant.thumb.toString())),
                   ),
                 ),
                 Positioned(
@@ -411,7 +416,7 @@ class DisplayPage extends StatelessWidget {
                     ),
                     child: Center(
                       child: Text(
-                        "01:45",
+                        relevant.playTime.toString(),
                         style: TextStyle(
                           fontSize: ScreenUtil().setSp(10),
                           color: Colors.white,
@@ -428,14 +433,14 @@ class DisplayPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  "日剧片段：听说桐岛要退部",
+                  relevant.title.toString(),
                   style: TextStyle(
                     fontSize: ScreenUtil().setSp(14),
                     color: Colors.grey[600],
                   ),
                 ),
                 Text(
-                  "Daisy / #混剪   3456次播放",
+                  relevant.tag.toString(),
                   style: TextStyle(
                     fontSize: ScreenUtil().setSp(12),
                     color: Colors.grey[600],

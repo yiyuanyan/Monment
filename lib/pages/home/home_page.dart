@@ -15,7 +15,7 @@ class HomePage extends StatelessWidget {
         backgroundColor: Colors.white,
         title: Text("首页", style: TextStyle(fontSize: ScreenUtil().setSp(18), color: Colors.grey[600]),),
         centerTitle: true,
-        elevation: 0.5,
+        //elevation: 1,
         actions: <Widget>[
           IconButton(
             highlightColor: Colors.white,
@@ -36,6 +36,7 @@ class HomePage extends StatelessWidget {
           if(snapshot.data == "OK"){
             
             return Container(
+              margin: EdgeInsets.only(top: ScreenUtil().setHeight(10)),
               color: Colors.white,
               child: ListView(
                 shrinkWrap: true,
