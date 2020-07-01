@@ -5,6 +5,7 @@ import 'package:monment/routers/router_handler.dart';
 class Routes{
   static String root = "/";
   static String display = "/display";
+  static String personalHome = "/personalHome";
   static void configureRoutes(Router router){
     //判断是否匹配到路由
     router.notFoundHandler = Handler(
@@ -15,5 +16,6 @@ class Routes{
     );
     router.define(root, handler: RootHandler);
     router.define(display, handler: DisplayHandler);
+    router.define(personalHome, handler: PersonalHomeHandler);
   }
 }

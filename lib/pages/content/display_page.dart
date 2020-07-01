@@ -136,6 +136,7 @@ class DisplayPage extends StatelessWidget {
               InkWell(
                 onTap: (){
                   print("点击了头像");
+                  Application.router.navigateTo(context, "/personalHome?userId=1");
                 },
                 child: ClipOval(
                   child: Image(
