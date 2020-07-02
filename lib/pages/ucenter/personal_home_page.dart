@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:monment/routers/application.dart';
@@ -10,6 +12,8 @@ class PersonalHomePage extends StatefulWidget {
 }
 
 class _PersonalHomePageState extends State<PersonalHomePage> {
+  Color btnColor = Color.fromRGBO(255, 255, 255, 1);
+
   @override
   Widget build(BuildContext context) {
     return Listener(
@@ -32,11 +36,11 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
             actions: <Widget>[
               IconButton(icon: Icon(Icons.more_vert), onPressed: (){
                 print("点击了分享按钮");
-              }),
+              }, color: btnColor,),
             ],
             leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: (){
               Application.router.pop(context);
-            }),
+            }, color: btnColor,),
             expandedHeight: ScreenUtil().setHeight(300),
             flexibleSpace: LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints){
@@ -46,6 +50,20 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                   opa = opa;
                 }else{
                   opa = 0;
+                }
+                if(constraints.biggest.height == 80){
+                  print("改变按钮颜色");
+                  Future.delayed(Duration(milliseconds: 20)).then((value){
+                    setState(() {
+                      btnColor = Color.fromRGBO(0, 0, 0, 1);
+                    });
+                  });
+                }else{
+                  Future.delayed(Duration(milliseconds: 20)).then((value){
+                    setState(() {
+                      btnColor = Color.fromRGBO(255, 255, 255, 1);
+                    });
+                  });
                 }
                 print(opa);
                 return FlexibleSpaceBar(
@@ -63,7 +81,7 @@ class _PersonalHomePageState extends State<PersonalHomePage> {
                 height: ScreenUtil().setHeight(30),
                 color: Colors.blue,
               );
-            },childCount: 30,),
+            },childCount: 300,),
 
           ),
         ],
@@ -118,7 +136,7 @@ class SliverTopBar extends StatelessWidget {
         ),
         Positioned(
           top: ScreenUtil().setHeight(130),
-          left: ScreenUtil().setWidth(30),
+          left: ScreenUtil().setWidth(15),
           child: Container(
             child: CircleAvatar(
               backgroundImage: AssetImage("assets/images/content/u167.png",),
