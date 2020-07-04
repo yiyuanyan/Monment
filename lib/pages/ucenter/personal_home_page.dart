@@ -1,7 +1,10 @@
 import 'dart:math';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/screenutil.dart';
+import 'package:monment/provide/personal_home_provide.dart';
 import 'package:monment/routers/application.dart';
+import 'package:provide/provide.dart';
 
 //随机颜色
 Color slRandomColor({int r = 255, int g = 255, int b = 255, a = 255}) {
@@ -73,7 +76,7 @@ class _PersonalHomePageState extends State<PersonalHomePage>
               backgroundColor: Colors.white,
               pinned: true, //是否顶部吸附
               elevation: 0,
-              expandedHeight: ScreenUtil().setHeight(225), //appBar展开高度
+              expandedHeight: ScreenUtil().setHeight(223), //appBar展开高度
               leading: IconButton(
                 icon: Icon(Icons.arrow_back),
                 onPressed: () {
@@ -107,11 +110,8 @@ class _PersonalHomePageState extends State<PersonalHomePage>
             //内容列表
             SliverList(
               delegate: SliverChildBuilderDelegate((context, index) {
-                return Container(
-                  height: ScreenUtil().setHeight(375),
-                  color: slRandomColor(),
-                );
-              }, childCount: 30),
+                return ListItem();
+              }, childCount: 1),
             ),
           ],
         ),
@@ -137,47 +137,114 @@ class MySliverPersistentHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Material(
-      color: Colors.white,
-      child: Column(
-        children: <Widget>[
-          Divider(
-            height: 1,
-            color: Colors.grey[600],
-          ),
-          TabBar(
-            indicatorSize: TabBarIndicatorSize.label,
-            labelColor: Colors.blue,
-            unselectedLabelColor: Colors.black,
-            controller: this.tabController,
-            tabs: <Widget>[
-              Tab(
-                text: "动态",
-              ),
-              Tab(
-                text: "作品",
-              ),
-            ],
-          ),
-          Divider(
-            height: 1,
-            color: Colors.grey[600],
-          ),
-        ],
-      ),
-    );
+    return HeaderView();
   }
 
   @override
-  double get maxExtent => 50.0;
+  double get maxExtent => ScreenUtil().setHeight(48);
 
   @override
-  double get minExtent => 50.0;
+  double get minExtent => ScreenUtil().setHeight(48);
 
   @override
   bool shouldRebuild(SliverPersistentHeaderDelegate oldDelegate) =>
       true; // 如果内容需要更新，设置为true
 }
+
+class HeaderView extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Provide<PersonalHomeProvide>(
+      builder: (context, child, value){
+        return Material(
+          color: Colors.white,
+          child: Column(
+            children: <Widget>[
+              Divider(
+                height: 1,
+                color: Colors.grey[600],
+              ),
+              Container(
+                height: ScreenUtil().setHeight(45),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        children: <Widget>[
+                          InkWell(
+                            onTap: (){
+                              print("点击了动态按钮");
+                              Provide.value<PersonalHomeProvide>(context).changePersonalListTag(1);
+                            },
+                            child: Container(
+                              height: ScreenUtil().setHeight(43),
+                              child: Text(
+                                "动态",
+                                style: TextStyle(
+                                  fontSize: ScreenUtil().setSp(14),
+                                  color: value.personalListTag == 1 ? Colors.blueAccent : Colors.black,
+                                ),
+                              ),
+                              alignment: Alignment.center,
+                            ),
+                          ),
+                          //动态标记线
+                          Container(
+                            height: ScreenUtil().setHeight(2),
+                            width: ScreenUtil().setWidth(20),
+                            color: value.personalListTag == 1 ? Colors.blueAccent : Colors.white,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      flex: 1,
+                      child: Column(
+                        children: <Widget>[
+                          InkWell(
+                            onTap: (){
+                              print("点击了动作品钮");
+                              Provide.value<PersonalHomeProvide>(context).changePersonalListTag(2);
+                            },
+                            child: Container(
+                              height: ScreenUtil().setHeight(43),
+                              child: Text(
+                                "作品",
+                                style: TextStyle(
+                                  fontSize: ScreenUtil().setSp(14),
+                                  color: value.personalListTag == 2 ? Colors.blueAccent : Colors.black,
+                                ),
+                              ),
+                              alignment: Alignment.center,
+                            ),
+                          ),
+                          //动态标记线
+                          Container(
+                            height: ScreenUtil().setHeight(2),
+                            width: ScreenUtil().setWidth(20),
+                            color: value.personalListTag == 2 ? Colors.blueAccent : Colors.white,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Divider(
+                height: 1,
+                color: Colors.grey[600],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
 
 // SliverAppBar样式
 class SliverTopBar extends StatefulWidget {
@@ -291,58 +358,14 @@ class _SliverTopBarState extends State<SliverTopBar> {
   }
 }
 
-//动态列表
-class DynamicList extends StatelessWidget {
-  const DynamicList({Key key}) : super(key: key);
-  static Color slRandomColor({int r = 255, int g = 255, int b = 255, a = 255}) {
-    if (r == 0 || g == 0 || b == 0) return Colors.black;
-    if (a == 0) return Colors.white;
-    return Color.fromARGB(
-      a,
-      r != 255 ? r : Random.secure().nextInt(r),
-      g != 255 ? g : Random.secure().nextInt(g),
-      b != 255 ? b : Random.secure().nextInt(b),
-    );
-  }
-
+class ListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: ScreenUtil().setHeight(375),
       color: slRandomColor(),
-      // child: ListView.builder(
-      //   shrinkWrap: true,
-      //   physics: ClampingScrollPhysics(),
-      //   itemBuilder: (context, index) {
-      //     return Container(
-      //       color: slRandomColor(),
-      //     );
-      //   },
-      //   itemExtent: ScreenUtil().setHeight(375),
-      //   itemCount: 20,
-      // ),
     );
   }
 }
 
-//作品列表
-class WorksList extends StatelessWidget {
-  const WorksList({Key key}) : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: slRandomColor(),
-      // child: ListView.builder(
-      //   shrinkWrap: true,
-      //   physics: ClampingScrollPhysics(),
-      //   itemBuilder: (context, index) {
-      //     return Container(
-      //       color: slRandomColor(),
-      //     );
-      //   },
-      //   itemExtent: ScreenUtil().setHeight(375),
-      //   itemCount: 20,
-      // ),
-    );
-  }
-}
