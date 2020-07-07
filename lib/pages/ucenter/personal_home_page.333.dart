@@ -1,10 +1,7 @@
-import 'package:flutter/material.dart';
 import 'dart:math';
 import 'dart:io';
-
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:monment/config/service_url.dart';
-import 'package:monment/model/ucenter_model.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/screenutil.dart';
 import 'package:monment/provide/personal_home_provide.dart';
 import 'package:monment/provide/ucenter_provide.dart';
 import 'package:monment/routers/application.dart';
@@ -22,116 +19,152 @@ Color slRandomColor({int r = 255, int g = 255, int b = 255, a = 255}) {
   );
 }
 
-class PersonalHomePage extends StatelessWidget {
-  final String userId;
-  const PersonalHomePage({Key key, @required this.userId}) : super(key: key);
+class PersonalHomePage extends StatefulWidget {
+  final userId;
+  PersonalHomePage({Key key, @required this.userId}) : super(key: key);
+
+  @override
+  _PersonalHomePageState createState() => _PersonalHomePageState();
+}
+
+//集成SingleTickerProviderStateMixin可使用控制器
+class _PersonalHomePageState extends State<PersonalHomePage>
+    with SingleTickerProviderStateMixin {
+  Future<int> future;
+  //滚动控制器
+  ScrollController scrollController;
+  //Tab控制器
+  TabController tabController;
+  //折叠预拉伸时appbar文字和按钮的透明度
+  double opa = 0;
+  //折叠预拉伸时appbar文字和按钮的颜色
+  Color cusColor;
+  //构造函数
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    //初始化控制器
+    this.scrollController = ScrollController();
+    //初始化控制器
+    this.tabController = TabController(length: 2, vsync: this);
+    //重点：给控制器增加滚动监听方法 弊端就是滚动就会重新build页面
+    //this.scrollController.addListener(() {});
+    _getUcenterInfo(context, widget.userId);
+  }
 
   @override
   Widget build(BuildContext context) {
-    //滚动控制器
-    ScrollController scrollController = ScrollController();
-    scrollController.addListener(() {
-      print(scrollController.offset);
-      if (scrollController.offset > 110) {
-        Provide.value<UcenterProvide>(context).changeOpa(0);
-      } else {
-        Provide.value<UcenterProvide>(context).changeOpa(1);
-      }
-    });
-    //Tab控制器
-    TabController tabController;
-    //因为本路由没有使用Scaffold，为了让子级Widget(如Text)使用
-    //Material Design 默认的样式风格,我们使用Material作为本路由的根。
-    return FutureBuilder(
-      future: _getUcenterInfo(context, this.userId),
-      builder: (context, snapshot) {
-        if (snapshot.data == "OK") {
-          return Material(
-            child: Provide<UcenterProvide>(
-              builder: (context, child, value) {
-                return CustomScrollView(
-                  controller: scrollController,
-                  slivers: <Widget>[
-                    //AppBar，包含一个导航栏
-                    SliverAppBar(
-                      pinned: true,
-                      expandedHeight: ScreenUtil().setHeight(223),
-                      backgroundColor: Colors.white,
-                      elevation: 0,
-                      leading: IconButton(
-                        icon: Icon(Icons.arrow_back),
-                        onPressed: () {
-                          Application.router.pop(context);
-                        },
-                        color: value.opa == 1 ? Colors.white : Colors.black,
-                      ),
-                      actions: <Widget>[
-                        IconButton(
-                          icon: Icon(Icons.more_vert),
-                          onPressed: () {
-                            print("点击了分享按钮");
-                          },
-                          color: value.opa == 1 ? Colors.white : Colors.black,
-                        ),
-                      ],
-                      flexibleSpace: FlexibleSpaceBar(
-                        centerTitle: true,
-                        title: homeTitle(value.opa),
-                        background: SliverTopBar(
-                          userInfo: value.userInfo,
-                        ),
-                      ),
-                    ),
-
-                    SliverPersistentHeader(
-                      //可折叠AppBar底部栏
-                      pinned: true, //是否可吸附
-                      //自定义代理并且将控制器传入
-                      delegate: MySliverPersistentHeaderDelegate(
-                          tabController: tabController),
-                    ),
-                    //内容列表
-                    SliverList(
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        return ListItem(
-                          index: index, itemInfo: value.userDynamic[index],
-                        );
-                      }, childCount: value.userDynamic.length),
-                    ),
-                  ],
-                );
+    print(Provide.value<UcenterProvide>(context).opa);
+    return Scaffold(
+      body: FutureBuilder(
+        future: _getUcenterInfo(context, null),
+        builder: (context, snapshot) {
+          if (snapshot.data == "OK") {
+            return NotificationListener(
+              onNotification: (ScrollNotification notification){
+                ScrollMetrics metrics = notification.metrics;
+                print(metrics.pixels);
+                if(metrics.pixels > 110){
+                  setState(() {
+                    this.opa = 0;
+                  });
+                }else{
+                  setState(() {
+                    this.opa = 1;
+                  });
+                }
+                return true;
               },
-            ),
-          );
-        } else {
-          return Container(
-            child: Center(
-              child: Text(
-                "正在加载中.....",
+              child: CustomScrollView(
+                //自定义滚动试图
+                controller: this.scrollController,
+                slivers: <Widget>[
+                  SliverAppBar(
+                    //可折叠伸展AppBar
+                    backgroundColor: Colors.white,
+                    pinned: true, //是否顶部吸附
+                    elevation: 0,
+                    expandedHeight: Platform.isIOS == true
+                        ? ScreenUtil().setHeight(233)
+                        : ScreenUtil().setHeight(223), //appBar展开高度
+                    leading: IconButton(
+                      icon: Icon(Icons.arrow_back),
+                      onPressed: () {
+                        Application.router.pop(context);
+                      },
+                      color: this.opa == 1
+                          ? Colors.white
+                          : Colors.black,
+                    ),
+                    actions: <Widget>[
+                      IconButton(
+                        icon: Icon(Icons.more_vert),
+                        onPressed: () {
+                          print("点击了分享按钮");
+                        },
+                        color: this.opa == 1
+                            ? Colors.white
+                            : Colors.black,
+                      ),
+                    ],
+                    flexibleSpace: FlexibleSpaceBar(
+                      //AppBar内容与样式
+                      centerTitle: true,
+                      title: homeTitle(),
+                      background: SliverTopBar(),
+                    ),
+                  ),
+                  SliverPersistentHeader(
+                    //可折叠AppBar底部栏
+                    pinned: true, //是否可吸附
+                    //自定义代理并且将控制器传入
+                    delegate: MySliverPersistentHeaderDelegate(
+                        tabController: this.tabController),
+                  ),
+                  //内容列表
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      return ListItem(
+                        index: index,
+                      );
+                    }, childCount: 10),
+                  ),
+                ],
               ),
-            ),
-          );
-        }
-      },
+            );
+          } else {
+            return Container(
+              child: Center(
+                child: Text("正在加载中....."),
+              ),
+            );
+          }
+        },
+      ),
     );
   }
 
-  Widget homeTitle(int opa) {
+  Widget homeTitle() {
     return Text(
       "Daisy的主页",
       style: TextStyle(
         fontSize: ScreenUtil().setSp(18),
-        color: Color.fromRGBO(0, 0, 0, opa == 1 ? 0 : 1),
+        color: Color.fromRGBO(0, 0, 0, this.opa == 1 ? 0 : 1),
       ),
     );
   }
 
   Future<String> _getUcenterInfo(BuildContext context, String user_id) async {
-    await Provide.value<UcenterProvide>(context).getUcenter(user_id);
-    if (Provide.value<UcenterProvide>(context).code == 200) {
+    if(user_id == null){
       return "OK";
-    } else {
-      return "FALSE";
+    }else{
+      await Provide.value<UcenterProvide>(context).getUcenter(user_id);
+      if (Provide.value<UcenterProvide>(context).code == 200) {
+        return "OK";
+      } else {
+        return "FALSE";
+      }
     }
   }
 }
@@ -157,7 +190,6 @@ class MySliverPersistentHeaderDelegate extends SliverPersistentHeaderDelegate {
       true; // 如果内容需要更新，设置为true
 }
 
-//切换按钮视图
 class HeaderView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -262,19 +294,21 @@ class HeaderView extends StatelessWidget {
   }
 }
 
-//顶部用户信息视图
-class SliverTopBar extends StatelessWidget {
-  final UserInfo userInfo;
-  const SliverTopBar({Key key, @required this.userInfo}) : super(key: key);
+// SliverAppBar样式
+class SliverTopBar extends StatefulWidget {
+  @override
+  _SliverTopBarState createState() => _SliverTopBarState();
+}
 
+class _SliverTopBarState extends State<SliverTopBar> {
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
         Column(
           children: <Widget>[
-            Image.network(
-              fileURL + this.userInfo.backgroundImg,
+            Image.asset(
+              "assets/images/content/u214.jpg",
               fit: BoxFit.fitWidth,
               width: ScreenUtil().setWidth(375),
               height: ScreenUtil().setHeight(151),
@@ -297,7 +331,7 @@ class SliverTopBar extends StatelessWidget {
                       Expanded(
                         flex: 2,
                         child: Text(
-                          this.userInfo.userName,
+                          "Daisy",
                           style: TextStyle(
                             fontSize: ScreenUtil().setSp(16),
                             color: Colors.grey[600],
@@ -332,7 +366,7 @@ class SliverTopBar extends StatelessWidget {
                   //用户说明
                   Container(
                     child: Text(
-                      this.userInfo.userDesc,
+                      "日剧日影混剪。微博：贪吃的Daisy",
                       maxLines: 1,
                       style: TextStyle(
                         fontSize: ScreenUtil().setSp(12),
@@ -342,10 +376,7 @@ class SliverTopBar extends StatelessWidget {
                   ),
                   Container(
                     child: Text(
-                      "关注 " +
-                          this.userInfo.follow.toString() +
-                          "  |  粉丝 " +
-                          this.userInfo.fans.toString(),
+                      "关注 26  |  粉丝 10.6w",
                       style: TextStyle(
                         fontSize: ScreenUtil().setSp(12),
                         color: Colors.grey[500],
@@ -364,7 +395,9 @@ class SliverTopBar extends StatelessWidget {
             width: ScreenUtil().setWidth(50),
             height: ScreenUtil().setHeight(60),
             child: CircleAvatar(
-              backgroundImage: NetworkImage(fileURL + this.userInfo.userImgBig),
+              backgroundImage: AssetImage(
+                "assets/images/content/u167.png",
+              ),
             ),
           ),
         ),
@@ -375,14 +408,14 @@ class SliverTopBar extends StatelessWidget {
 
 class ListItem extends StatelessWidget {
   final int index;
-  final UserDynamic itemInfo;
-  const ListItem({Key key, @required this.index, @required this.itemInfo}) : super(key: key);
+
+  const ListItem({Key key, @required this.index}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return itemInfo.type == 1 ? _getVideoItem(itemInfo) : _getMusicItem(itemInfo);
+    return index % 2 == 0 ? _getVideoItem() : _getMusicItem();
   }
 
-  Widget _getMusicItem(UserDynamic itemInfo) {
+  Widget _getMusicItem() {
     return Container(
       padding: EdgeInsets.only(
           left: ScreenUtil().setHeight(20),
@@ -400,8 +433,8 @@ class ListItem extends StatelessWidget {
                 width: ScreenUtil().setWidth(40),
                 height: ScreenUtil().setHeight(40),
                 child: ClipOval(
-                  child: Image.network(
-                    fileURL + itemInfo.userImgSmall,
+                  child: Image.asset(
+                    "assets/images/content/u167.png",
                     width: ScreenUtil().setWidth(40),
                     height: ScreenUtil().setHeight(40),
                     fit: BoxFit.contain,
@@ -417,14 +450,14 @@ class ListItem extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Text(
-                    itemInfo.userName,
+                    "Daisy",
                     style: TextStyle(
                       fontSize: ScreenUtil().setSp(16),
                       color: Colors.blueAccent,
                     ),
                   ),
                   Text(
-                    itemInfo.releaseTime.toString() + " 发布了新音乐",
+                    "02-03 发布了新视频",
                     style: TextStyle(
                       fontSize: ScreenUtil().setSp(12),
                       color: Colors.grey[600],
@@ -456,7 +489,7 @@ class ListItem extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(Radius.circular(5)),
                     image: DecorationImage(
-                        image: NetworkImage(fileURL + itemInfo.thumb)),
+                        image: AssetImage("assets/images/content/u637.png")),
                   ),
                 ),
                 //SizedBox(width: ScreenUtil().setWidth(10),),
@@ -467,14 +500,14 @@ class ListItem extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       Text(
-                        itemInfo.title,
+                        "林楚川",
                         style: TextStyle(
                           fontSize: ScreenUtil().setSp(14),
                           color: Colors.black,
                         ),
                       ),
                       Text(
-                        itemInfo.desc,
+                        "爱音乐，爱生活。",
                         style: TextStyle(
                           fontSize: ScreenUtil().setSp(12),
                           color: Colors.grey[600],
@@ -521,7 +554,7 @@ class ListItem extends StatelessWidget {
     );
   }
 
-  Widget _getVideoItem(UserDynamic itemInfo) {
+  Widget _getVideoItem() {
     return Container(
       padding: EdgeInsets.only(
           left: ScreenUtil().setHeight(20),
@@ -539,8 +572,8 @@ class ListItem extends StatelessWidget {
                 width: ScreenUtil().setWidth(40),
                 height: ScreenUtil().setHeight(40),
                 child: ClipOval(
-                  child: Image.network(
-                    fileURL + itemInfo.userImgSmall,
+                  child: Image.asset(
+                    "assets/images/content/u167.png",
                     width: ScreenUtil().setWidth(40),
                     height: ScreenUtil().setHeight(40),
                     fit: BoxFit.contain,
@@ -556,14 +589,14 @@ class ListItem extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Text(
-                    itemInfo.userName,
+                    "Daisy",
                     style: TextStyle(
                       fontSize: ScreenUtil().setSp(16),
                       color: Colors.blueAccent,
                     ),
                   ),
                   Text(
-                    itemInfo.releaseTime + " 发布了新视频",
+                    "02-03 发布了新视频",
                     style: TextStyle(
                       fontSize: ScreenUtil().setSp(12),
                       color: Colors.grey[600],
@@ -578,7 +611,7 @@ class ListItem extends StatelessWidget {
           ),
           //介绍
           Text(
-            itemInfo.desc,
+            "「閃閃發光，炫彩奪目，心跳不已。卻又無可奈何地，非常輕易地動搖了我的世界。」",
             maxLines: 2,
             overflow: TextOverflow.clip,
             style: TextStyle(
@@ -604,7 +637,7 @@ class ListItem extends StatelessWidget {
                       color: slRandomColor(),
                       borderRadius: BorderRadius.all(Radius.circular(5)),
                       image: DecorationImage(
-                        image: NetworkImage(fileURL + itemInfo.thumb),
+                        image: AssetImage("assets/images/content/u150.png"),
                         fit: BoxFit.fill,
                       ),
                     ),
@@ -615,7 +648,7 @@ class ListItem extends StatelessWidget {
                     left: ScreenUtil().setWidth(20),
                     child: Container(
                       child: Text(
-                        itemInfo.watch+"观看",
+                        "5.6万观看",
                         style: TextStyle(
                           fontSize: ScreenUtil().setSp(12),
                           color: Colors.white,
@@ -636,7 +669,7 @@ class ListItem extends StatelessWidget {
                       ),
                       child: Center(
                         child: Text(
-                          itemInfo.playTime,
+                          "01:45",
                           style: TextStyle(
                             fontSize: ScreenUtil().setSp(12),
                             color: Colors.white,
@@ -653,7 +686,7 @@ class ListItem extends StatelessWidget {
             height: ScreenUtil().setHeight(10),
           ),
           Text(
-            itemInfo.title,
+            "日剧片段：听说桐岛要退部",
             style: TextStyle(
               fontSize: ScreenUtil().setSp(14),
               color: Colors.black,
@@ -688,7 +721,7 @@ class ListItem extends StatelessWidget {
                         width: ScreenUtil().setWidth(5),
                       ),
                       Text(
-                        itemInfo.like.toString(),
+                        "1221",
                         style: TextStyle(
                           fontSize: ScreenUtil().setSp(12),
                           color: Colors.black,
@@ -717,7 +750,7 @@ class ListItem extends StatelessWidget {
                         width: ScreenUtil().setWidth(5),
                       ),
                       Text(
-                        itemInfo.message.toString(),
+                        "1688",
                         style: TextStyle(
                           fontSize: ScreenUtil().setSp(12),
                           color: Colors.black,
@@ -746,7 +779,7 @@ class ListItem extends StatelessWidget {
                         width: ScreenUtil().setWidth(5),
                       ),
                       Text(
-                        itemInfo.forward.toString(),
+                        "245",
                         style: TextStyle(
                           fontSize: ScreenUtil().setSp(12),
                           color: Colors.black,

@@ -3,6 +3,7 @@ import 'package:monment/pages/index_page.dart';
 import 'package:monment/provide/display_provide.dart';
 import 'package:monment/provide/index_provide.dart';
 import 'package:monment/provide/personal_home_provide.dart';
+import 'package:monment/provide/ucenter_provide.dart';
 import 'package:monment/routers/application.dart';
 import 'package:fluro/fluro.dart';
 import 'package:monment/routers/routes.dart';
@@ -21,10 +22,12 @@ void main() {
   var indexProvide = IndexProvide();
   var displayProvide = DisplayProvide();
   var personalHomeProvide = PersonalHomeProvide();
+  var ucenterProvide = UcenterProvide();
 
   providers
     ..provide(Provider<PersonalHomeProvide>.value(personalHomeProvide))
     ..provide(Provider<DisplayProvide>.value(displayProvide))
+    ..provide(Provider<UcenterProvide>.value(ucenterProvide))
     ..provide(Provider<IndexProvide>.value(indexProvide));
 
   runApp(ProviderNode(child: MyApp(), providers: providers));

@@ -5,4 +5,5 @@ const servicePATH = {
   "getIndexSwiperBanners": serviceURL + "/getIndexSwiperBanners",  //获取首页轮播广告
   "getIndexContentLists": serviceURL + "/getIndexContentLists",  //获取首页内容列表
   "getDisplayContent": serviceURL + "/getDisplayContent",  //获取播放页面数据
+  "getUcenter": serviceURL + "/getUcenter",  //获取用户首页
 };
